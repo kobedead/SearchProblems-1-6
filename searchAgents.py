@@ -344,6 +344,9 @@ class CornersProblem(search.SearchProblem):
 
         ## so i need to always return a pretty unique successor ,cause i check them with nodesvisited.
         ##ill use a class -> idea from https://github.com/prady1402/cs188/blob/master/cs188/p1_search/search.py
+        ##if corner is hit the corners that need to be hit are changed so the object is not the same as the one
+        ##you came from. this means you can return to a visited node that is saved in the visitednode list.(if corner is hit in the meantime)
+
 
         ##also need a way to keep the corners that are visited to the right exploration variant
         ##keeping this globally would only work with dfs
