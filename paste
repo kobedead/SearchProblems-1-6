@@ -1,0 +1,85 @@
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe  pacman.py -l tinyMaze -p SearchAgent
+
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l mediumMaze -p SearchAgent
+
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l bigMaze -z .5 -p SearchAgent
+
+
+
+
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe  pacman.py -l mediumMaze -p SearchAgent -a fn=bfs
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l bigMaze -p SearchAgent -a fn=bfs -z .5
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l openmaze -p SearchAgent -a fn=bfs -z .5
+
+
+
+
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l mediumMaze -p SearchAgent -a fn=ucs
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l openmaze -p SearchAgent -a fn=ucs
+
+
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l mediumDottedMaze -p StayEastSearchAgent
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l mediumScaryMaze -p StayWestSearchAgent
+
+
+
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l bigMaze -z .5 -p SearchAgent -a fn=ucs
+
+
+
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l bigMaze -z .5 -p SearchAgent -a fn=astar,heuristic=manhattanHeuristic
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l openmaze -z .5 -p SearchAgent -a fn=astar,heuristic=manhattanHeuristic
+
+
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l tinyCorners -p SearchAgent -a fn=bfs,prob=CornersProblem
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py -l mediumCorners -p SearchAgent -a fn=bfs,prob=CornersProblem
+
+
+C:\Users\kobef\AppData\Local\Programs\Python\Python39\python.exe pacman.py  -l mediumCorners -p AStarCornersAgent -z 0.5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def depthFirstSearch(problem, posititon=None):
+    """Search the deepest nodes in the search tree first."""
+    frontier = util.Stack()
+    # Unexplored states, holds nodes in (state, action) forms frontier util.Stack()
+    # Explored states, stores these states
+    exploredNodes = []
+    # define starting node
+    startState = problem.getStartState()
+    startNode = (startState, [])
+    frontier.push(startNode)
+
+    while not frontier.isEmpty():
+        # Start exploring most recently pushed node on frontier currentState, actions = frontier.pop()
+
+        currentState, actions = frontier.pop()
+        if currentState not in exploredNodes:  # mark current node as explored exploredNodes.append(currentState)
+            exploredNodes.append(currentState)
+            if problem.isGoalState(currentState):
+                return actions
+            else:
+                # list possible successor nodes in form (successor, action, stepCost) successors = problem.getSuccessors (currentState)
+                successors = problem.getSuccessors(currentState)
+
+                # push each successor to frontier
+                for succState, succAction, succCost in successors:
+                    newAction = actions + [succAction]
+                    newNode = (succState, newAction)
+                    frontier.push(newNode)
+    return actions
+
