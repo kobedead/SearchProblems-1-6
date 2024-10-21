@@ -124,25 +124,31 @@ def breadthFirstSearch(problem):
     pathQueue = util.Queue()
     listvisited = [problem.getStartState()]
 
-    m = (problem.getStartState() ,() , 0)  # gets path from queue
+    ##create right format to push in queue
+    m = (problem.getStartState() ,() , 0)
     pathQueue.push(m)
 
     while not pathQueue.isEmpty()  :   # Creating loop to visit each node
 
+        ##get node
         m = pathQueue.pop()
+        ##check all noder where you can move to
         for i in problem.getSuccessors(m[0]):
 
+            ##if not yet visited
             if i[0] not in listvisited:
-
-
+                ##add actions so you know all the moves at the end
                 act = m[1] + (i[1],)
-                t=(i[0] , act , m[2] + i[2] )
+                ##add everything back into format
+                newNode=(i[0] , act , m[2] + i[2] )
 
+                ##if the move is goalstate -> return all the actions saved
                 isgoal = problem.isGoalState(i[0])
                 if (isgoal) :
-                    return t[1]
+                    return newNode[1]
 
-                pathQueue.push(t )
+                ##push the new node onto the queue
+                pathQueue.push(newNode )
                 listvisited.append(i[0])
 
 
@@ -158,21 +164,25 @@ def uniformCostSearch(problem):
 
     m = ()  # gets path from queue
     k = (problem.getStartState(), "beginstate" , 0 )  # gets coordinates for the last node in the path
-    goal = problem.isGoalState(k)
 
 
     while not problem.isGoalState(k[0]):  # Creating loop to visit each node
 
+        ##check successors
         for i in problem.getSuccessors(k[0]):
+            ##if successor not yet visited
             if i[0] not in listvisited:
+                ##add successor node togheter with previous node/path
                 t = m + (i,)
+                ##put the new path into queue togheter with total cost of path
                 pathQueue.update(t, k[2]+i[2])
                 listvisited.append(i[0])
 
         m = pathQueue.pop()
+        ##get last node from path
         k = m[len(m) - 1]
 
-
+    ##to get all directions
     directions = []
     for i in m:
         directions.append(i[1])
@@ -197,28 +207,37 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     pathQueue = util.PriorityQueue()
     listvisited = [problem.getStartState()]
 
-    m = (problem.getStartState(), (), 0)  # gets path from queue
-    pathQueue.update(m , 0)
+    ##create right format to push in queue
+    m = (problem.getStartState(), (), 0)
+    pathQueue.push(m,0)
 
     while not pathQueue.isEmpty():  # Creating loop to visit each node
 
+        ##get node
         m = pathQueue.pop()
+        ##check all noder where you can move to
         for i in problem.getSuccessors(m[0]):
 
+            ##if not yet visited
             if i[0] not in listvisited:
-
+                ##add actions so you know all the moves at the end
                 act = m[1] + (i[1],)
-                t = (i[0], act, m[2] + i[2])
+                ##add everything back into format
+                newNode = (i[0], act, m[2] + i[2])
 
+                ##if the move is goalstate -> return all the actions saved
                 isgoal = problem.isGoalState(i[0])
                 if (isgoal):
-                    return t[1]
+                    return newNode[1]
 
+                ##get cost(heuristic) associated with the next node
                 aStarCost = heuristic(i[0] , problem)
-                pathQueue.update(t , aStarCost)
+                ##push the new node onto the queue
+                pathQueue.push(newNode, aStarCost)
                 listvisited.append(i[0])
 
     return ''
+
 
 # Abbreviations
 bfs = breadthFirstSearch
