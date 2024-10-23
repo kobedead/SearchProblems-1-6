@@ -237,6 +237,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                 ##get heuristic and add cost of path
                 heuristicCost =  heuristic(i[0] , problem) + newNode[2]
 
+
                 ##push the new node onto the queue
                 pathQueue.update(newNode , heuristicCost)
                 listvisited.append(i[0])

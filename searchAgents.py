@@ -348,6 +348,7 @@ class CornersProblem(search.SearchProblem):
                 if nextState in cornersUnvisited :
                     cornersUnvisited.remove(nextState)
                 successors.append(((nextState,cornersUnvisited),action,1))
+
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
@@ -400,7 +401,6 @@ def cornersHeuristic(state, problem):
         walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
 
         "*** YOUR CODE HERE ***"
-        distanceTocorners= []
         currentLocation = state[0]
         cornersUnvisited = state[1]
 
