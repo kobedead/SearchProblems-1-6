@@ -155,7 +155,7 @@ def breadthFirstSearch(problem):
 
 
 
-    return  ''
+    return  0
 
 
 def uniformCostSearch(problem):
@@ -193,7 +193,7 @@ def uniformCostSearch(problem):
 
 
 
-    return  ''
+    return  0
 
 
 def nullHeuristic(state, problem=None):
@@ -243,7 +243,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
 
 
-    return  ''
+    return  0
 
 
 # Abbreviations
