@@ -76,7 +76,7 @@ def depthFirstSearch(problem, posititon=None):
 
 
     help = (problem.getStartState(), 1)
-    nodes = [problem.getStartState()]
+    nodes = set(problem.getStartState())
     nodeStack = []
 
     iteratedepth(problem, help, nodes, nodeStack)
@@ -84,23 +84,24 @@ def depthFirstSearch(problem, posititon=None):
 
     return nodeStack
 
-def iteratedepth(problem , node : tuple , nodesDone : list , nodeStack ) :
+def iteratedepth(problem , node : tuple , nodesDone : set , nodeStack ) :
 
 
     if not problem.isGoalState(node[0]) :
 
+        ##it just takes a path until the end is found, so if it takes the wrong child
+        ##it takes a long path
+        new_lst = problem.getSuccessors(node[0])[::-1]
 
         ##if there are moves available
-        if (problem.getSuccessors(node[0])) :
+        if (new_lst) :
 
-            ##it just takes a path until the end is found, so if it takes the wrong child
-            ##it takes a long path
-            new_lst = problem.getSuccessors(node[0])[::-1]
+
             ##check children
             for i in new_lst:
 
                 if i[0] not in nodesDone :
-                    nodesDone.append(i[0])
+                    nodesDone.add(i[0])
                     nodeStack.append(i[1])
 
 
@@ -125,30 +126,31 @@ def breadthFirstSearch(problem):
     listvisited = [problem.getStartState()]
 
     ##create right format to push in queue
-    m = (problem.getStartState() ,() , 0)
+    m = (problem.getStartState() ,[] , 0)
     pathQueue.push(m)
 
     while not pathQueue.isEmpty()  :   # Creating loop to visit each node
 
         ##get node
         m = pathQueue.pop()
+
+        ##if the move is goalstate -> return all the actions saved
+        if (problem.isGoalState(m[0])):
+            return m[1]
+
         ##check all noder where you can move to
         for i in problem.getSuccessors(m[0]):
 
             ##if not yet visited
             if i[0] not in listvisited:
+
                 ##add actions so you know all the moves at the end
-                act = m[1] + (i[1],)
+                act = m[1] + [i[1]]
                 ##add everything back into format
                 newNode=(i[0] , act , m[2] + i[2] )
 
-                ##if the move is goalstate -> return all the actions saved
-                isgoal = problem.isGoalState(i[0])
-                if (isgoal) :
-                    return newNode[1]
-
                 ##push the new node onto the queue
-                pathQueue.push(newNode )
+                pathQueue.push(newNode)
                 listvisited.append(i[0])
 
 
@@ -161,33 +163,37 @@ def uniformCostSearch(problem):
     "*** YOUR CODE HERE ***"
     pathQueue = util.PriorityQueue()
     listvisited = [problem.getStartState()]
+    ##create right format to push in queue
+    m = (problem.getStartState() ,[] , 0)
+    pathQueue.push(m, 0)
 
-    m = ()  # gets path from queue
-    k = (problem.getStartState(), "beginstate" , 0 )  # gets coordinates for the last node in the path
+    while not pathQueue.isEmpty()  :   # Creating loop to visit each node
+
+        ##get node
+        m = pathQueue.pop()
+
+        ##if the move is goalstate -> return all the actions saved
+        if (problem.isGoalState(m[0])):
+            return m[1]
+
+        ##check all noder where you can move to
+        for i in problem.getSuccessors(m[0]):
 
 
-    while not problem.isGoalState(k[0]):  # Creating loop to visit each node
+            ##if not yet visited
+            if i[0] not in listvisited or problem.isGoalState(i[0]):
+                ##add actions so you know all the moves at the end
+                act = m[1] + [i[1]]
+                ##add everything back into format
+                newNode=(i[0] , act , m[2] + i[2] )
 
-        ##check successors
-        for i in problem.getSuccessors(k[0]):
-            ##if successor not yet visited
-            if i[0] not in listvisited:
-                ##add successor node togheter with previous node/path
-                t = m + (i,)
-                ##put the new path into queue togheter with total cost of path
-                pathQueue.update(t, k[2]+i[2])
+                ##push the new node onto the queue
+                pathQueue.update(newNode , newNode[2] )
                 listvisited.append(i[0])
 
-        m = pathQueue.pop()
-        ##get last node from path
-        k = m[len(m) - 1]
 
-    ##to get all directions
-    directions = []
-    for i in m:
-        directions.append(i[1])
-    return directions
 
+    return  ''
 
 
 def nullHeuristic(state, problem=None):
@@ -196,47 +202,48 @@ def nullHeuristic(state, problem=None):
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
     ##endstate is (0,0)??
-
-    flyingDistance = (((state[0])**2)+((state[0])**2))**(1/2)
-
-    return flyingDistance
+    if type(state[0]) == int :
+        return (((state[0])**2)+((state[0])**2))**(1/2)
+    return 0
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
     pathQueue = util.PriorityQueue()
-    listvisited = [problem.getStartState()]
+    listvisited = [(problem.getStartState())]
 
     ##create right format to push in queue
-    m = (problem.getStartState(), (), 0)
-    pathQueue.push(m,0)
+    m = (problem.getStartState() ,[] , heuristic(problem.getStartState() , problem))
+    pathQueue.push(m, 0)
 
-    while not pathQueue.isEmpty():  # Creating loop to visit each node
+    while not pathQueue.isEmpty()  :   # Creating loop to visit each node
 
         ##get node
         m = pathQueue.pop()
+        ##if the move is goalstate -> return all the actions saved
+        if (problem.isGoalState(m[0])):
+            return m[1]
+
         ##check all noder where you can move to
         for i in problem.getSuccessors(m[0]):
 
             ##if not yet visited
-            if i[0] not in listvisited:
+            if i[0] not in listvisited or problem.isGoalState(i[0]) :
                 ##add actions so you know all the moves at the end
-                act = m[1] + (i[1],)
+                act = m[1] + [i[1]]
                 ##add everything back into format
-                newNode = (i[0], act, m[2] + i[2])
+                newNode=(i[0] , act , m[2] + i[2] )
 
-                ##if the move is goalstate -> return all the actions saved
-                isgoal = problem.isGoalState(i[0])
-                if (isgoal):
-                    return newNode[1]
+                ##get heuristic and add cost of path
+                heuristicCost =  heuristic(i[0] , problem) + newNode[2]
 
-                ##get cost(heuristic) associated with the next node
-                aStarCost = heuristic(i[0] , problem)
                 ##push the new node onto the queue
-                pathQueue.push(newNode, aStarCost)
+                pathQueue.update(newNode , heuristicCost)
                 listvisited.append(i[0])
 
-    return ''
+
+
+    return  ''
 
 
 # Abbreviations

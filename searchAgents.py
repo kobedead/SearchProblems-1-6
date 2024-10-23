@@ -270,14 +270,6 @@ def euclideanHeuristic(position, problem, info={}):
 
 
 
-Position = Tuple[int, int]
-
-
-class CornersProblemState(NamedTuple):
-    position: Position
-    unvisitedCorners: list[Position]
-
-
 class CornersProblem(search.SearchProblem):
     """
     This search problem finds paths through all four corners of a layout.
@@ -300,10 +292,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
-        self.firstTimeSuccessorAsk = True
-        self.directionsToGo = [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]
-
-
+        self.startingState = (self.startingPosition, list(self.corners))
 
     def getStartState(self):
         """
@@ -312,24 +301,24 @@ class CornersProblem(search.SearchProblem):
         """
         "*** YOUR CODE HERE ***"
 
-        return self.startingPosition
+        return self.startingState
 
 
 
 
-    def isGoalState(self, state : CornersProblemState):
+    def isGoalState(self, state ):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
 
-        return not state.unvisitedCorners
+        return not state[1]
 
 
 
 
 
-    def getSuccessors(self, state : CornersProblemState):
+    def getSuccessors(self, state ):
         """
         Returns successor states, the actions they require, and a cost of 1.
 
@@ -341,48 +330,26 @@ class CornersProblem(search.SearchProblem):
         """
 
 
-
-        ## so i need to always return a pretty unique successor ,cause i check them with nodesvisited.
-        ##ill use a class -> idea from https://github.com/prady1402/cs188/blob/master/cs188/p1_search/search.py
-        ##if corner is hit the corners that need to be hit are changed so the object is not the same as the one
-        ##you came from. this means you can return to a visited node that is saved in the visitednode list.(if corner is hit in the meantime)
-
-
-        ##also need a way to keep the corners that are visited to the right exploration variant
-        ##keeping this globally would only work with dfs
-
-
-        if self.firstTimeSuccessorAsk:
-            state = CornersProblemState(state , list(self.corners))
-            self.firstTimeSuccessorAsk = False
-
-
-        laststate = state.position
-
-
-
         successors = []
-        random.shuffle(self.directionsToGo)
-        for action in self.directionsToGo :
+        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
 
-            x,y = laststate
+            #figure out if a new position hits a wall
+            x,y = state[0]
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
-            if not hitsWall :
-                nextstate = (nextx , nexty)
-                cornersToVisit = state.unvisitedCorners[:]
-                if nextstate in cornersToVisit :
-                    cornersToVisit.remove(nextstate)
-                nextProblemState = CornersProblemState(nextstate , cornersToVisit)
-                successor = (nextProblemState , action , dx+dy)
-                successors.append(successor)
-                
+
+
+            if not hitsWall:
+                nextState = (nextx, nexty)
+                cornersUnvisited = list(state[1])
+                if nextState in cornersUnvisited :
+                    cornersUnvisited.remove(nextState)
+                successors.append(((nextState,cornersUnvisited),action,1))
         self._expanded += 1 # DO NOT CHANGE
         return successors
-        
 
 
 
@@ -400,38 +367,49 @@ class CornersProblem(search.SearchProblem):
             if self.walls[x][y]: return 999999
         return len(actions)
 
-
-def cornersHeuristic(state : CornersProblemState, problem):
+def findClosestPoint(location, goalArray):
     """
-    A heuristic for the CornersProblem that you defined.
-
-      state:   The current search state
-               (a data structure you chose in your search problem)
-
-      problem: The CornersProblem instance for this layout.
-
-    This function should always return a number that is a lower bound on the
-    shortest path from the state to a goal of the problem; i.e.  it should be
-    admissible (as well as consistent).
+    Helper function for corners
     """
-    corners = problem.corners # These are the corner coordinates
-    walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
+    closestPointCost = float('inf')
 
+    for cornerLocation in goalArray:
+        lengthToCorner = util.manhattanDistance(location, cornerLocation)
 
-    pos = state.position
-    vogelVluchAfstand = []
-    for i in corners :
-        if i in state.unvisitedCorners :
-            vogelVluchAfstand.append(abs(((pos[0]-i[0])**2+(pos[1]-i[1])**2)**(1/2)))
+        if lengthToCorner < closestPointCost:
+            closestPointCost = lengthToCorner
 
+    return closestPointCost
 
 
-    ##so check what corner is closer to you and make that corner more valueable?
+def cornersHeuristic(state, problem):
+        """
+        A heuristic for the CornersProblem that you defined.
 
-    newList = sorted(vogelVluchAfstand)
-    return newList[0]
+          state:   The current search state
+                   (a data structure you chose in your search problem)
+
+          problem: The CornersProblem instance for this layout.
+
+        This function should always return a number that is a lower bound on the
+        shortest path from the state to a goal of the problem; i.e.  it should be
+        admissible (as well as consistent).
+        """
+        corners = problem.corners  # These are the corner coordinates
+        walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
+
+        "*** YOUR CODE HERE ***"
+        distanceTocorners= []
+        currentLocation = state[0]
+        cornersUnvisited = state[1]
+
+        #distanceFromStart = util.manhattanDistance(currentLocation , problem.getStartState()[0])
+
+        # calculate distance from current node to all corner nodes and get closest
+        if 0 < len(cornersUnvisited):
+            return findClosestPoint(currentLocation , cornersUnvisited)
+        return 0
 
 
 class AStarCornersAgent(SearchAgent):
@@ -526,7 +504,12 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    heuristic = 0
+    foodList = foodGrid.asList()
+
+    if len(foodList) > 0:
+        heuristic = findClosestPoint(position, foodList)
+    return heuristic
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -557,7 +540,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return list(search.breadthFirstSearch(problem))
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -593,7 +576,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.food[x][y]
 
 def mazeDistance(point1, point2, gameState):
     """
